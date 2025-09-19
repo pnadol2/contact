@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نموذج التواصل مع ولي أمر الطالب</title>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+<style>
+@font-face {
+  font-family: 'HelveticaNeueW23';
+  src: url('fonts/HelveticaNeueW23-Regular.ttf') format('truetype');
+}
+body, input, select, label, button {
+  font-family: 'HelveticaNeueW23', Arial, sans-serif;
+  margin:0; padding:0;
+}
+header { background:#15445A; color:white; text-align:center; padding:15px; }
+header h1 { margin:0; font-size:18px; }
+
+label {
+  display:block;
+  margin:5px 0 2px;
+  font-weight:bold;
+  font-size:12px;
+  background:transparent;
+  text-align:center;
+}
+
+input, textarea, select {
+  width:100%;
+  padding:6px;
+  border:1px solid #c2c1c2;
+  border-radius:4px;
+  margin-bottom:5px;
+  box-sizing:border-box;
+  font-size:12px;
+  text-align:center;
+  background-color: white;
+}
+
+button {
+  background:#0c8380;
+  color:white;
+  border:none;
+  padding:12px 0;
+  margin-top:10px;
+  cursor:pointer;
+  border-radius:6px;
+  font-size:16px;
+  font-weight:bold;
+  width:100%;
+  display:block;
+  text-align:center;
+}
+
+#studentChart { width:100%; height:320px; margin-top:10px; }
+
+.rating-display {
+  display:block; 
+  text-align:center; 
+  margin-top:5px; 
+  font-weight:bold; 
+  color:#d73027; 
+  font-size:16px;
+  background-color:#f9eaea;
+  border-radius:6px;
+  padding:5px;
+}
+
+@media print {
+  button { display:none; }
+  select { display:none; }
+  .hide-label-print label { display:none; }
+}
+</style>
+</head>
+<body>
+
+<header><h1>نموذج التواصل مع ولي أمر الطالب</h1></header>
+
+<div style="max-width:800px; margin:auto; padding:10px;">
+
+<!-- الصف الأول: الإدارة و المدرسة -->
+<div style="display:flex; gap:10px; justify-content:center;">
+  <div><label>إدارة تعليم منطقة</label><input type="text"></div>
+  <div><label>اسم المدرسة</label><input type="text"></div>
+</div>
+
+<!-- الصف الثاني: المعلم والمادة والفصل -->
+<div style="display:flex; gap:10px; justify-content:center;">
+  <div><label>اسم المعلم</label><input type="text"></div>
+  <div><label>المادة</label><input type="text"></div>
+  <div><label>الفصل الدراسي</label><input type="text"></div>
+</div>
+
+<!-- الصف الثالث: الطالب والصف واليوم والتاريخ -->
+<div style="display:flex; gap:10px; justify-content:center;">
+  <div><label>اسم الطالب</label><input type="text"></div>
+  <div><label>الصف</label><input type="text"></div>
+  <div><label>اليوم</label><input type="text"></div>
+  <div><label>التاريخ</label><input type="text"></div>
+</div>
+
+<!-- الصف الرابع: قوائم منسدلة 0%-100% -->
+<div style="display:flex; gap:10px; justify-content:center;" class="hide-label-print">
+  <div>
+    <label>مستوى التعليم</label>
+    <select id="selEdu" onchange="updateChartAndInputs()">
+      <option value="0">0%</option><option value="10">10%</option><option value="20">20%</option>
+      <option value="30">30%</option><option value="40">40%</option><option value="50">50%</option>
+      <option value="60">60%</option><option value="70">70%</option>
+      <option value="80">80%</option><option value="90">90%</option>
+      <option value="100">100%</option>
+    </select>
+    <div id="displayEdu" class="rating-display"></div>
+  </div>
+
+  <div>
+    <label>مستوى السلوك</label>
+    <select id="selBeh" onchange="updateChartAndInputs()">
+      <option value="0">0%</option><option value="10">10%</option><option value="20">20%</option>
+      <option value="30">30%</option><option value="40">40%</option><option value="50">50%</option>
+      <option value="60">60%</option><option value="70">70%</option>
+      <option value="80">80%</option><option value="90">90%</option>
+      <option value="100">100%</option>
+    </select>
+    <div id="displayBeh" class="rating-display"></div>
+  </div>
+
+  <div>
+    <label>مستوى المواظبة</label>
+    <select id="selAtt" onchange="updateChartAndInputs()">
+      <option value="0">0%</option><option value="10">10%</option><option value="20">20%</option>
+      <option value="30">30%</option><option value="40">40%</option><option value="50">50%</option>
+      <option value="60">60%</option><option value="70">70%</option>
+      <option value="80">80%</option><option value="90">90%</option>
+      <option value="100">100%</option>
+    </select>
+    <div id="displayAtt" class="rating-display"></div>
+  </div>
+</div>
+
+<!-- الصف الخامس: ملاحظات المعلم -->
+<div>
+<label>ملاحظات المعلم</label>
+<input type="text" id="teacherNotes">
+</div>
+
+<!-- الرسم البياني 2D -->
+<h5 style="text-align:center; margin-top:12px;">الرسم البياني لمستوى الطالب </h5>
+<div id="studentChart"></div>
+
+<!-- الصف السادس: الموجه والمدير -->
+<div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+  <div><label>الموجه الطلابي</label><input type="text" id="supervisor"></div>
+  <div><label>مدير المدرسة</label><input type="text"></div>
+</div>
+
+<button onclick="printPDF()">طباعة PDF</button>
+
+</div>
+
+<script>
+// دالة التقدير حسب النسبة
+function ratingText(val){
+  if(val>=90) return "ممتاز";
+  if(val>=80) return "جيد جدا";
+  if(val>=70) return "جيد";
+  if(val>=60) return "مقبول";
+  return "ضعيف";
+}
+
+// تحديث الرسم البياني وحقول العرض
+function updateChartAndInputs(){
+  const vEdu = Number(document.getElementById('selEdu').value);
+  const vBeh = Number(document.getElementById('selBeh').value);
+  const vAtt = Number(document.getElementById('selAtt').value);
+
+  document.getElementById('displayEdu').textContent = `${ratingText(vEdu)} ${vEdu}%`;
+  document.getElementById('displayBeh').textContent = `${ratingText(vBeh)} ${vBeh}%`;
+  document.getElementById('displayAtt').textContent = `${ratingText(vAtt)} ${vAtt}%`;
+
+  const values = [vEdu,vBeh,vAtt];
+  const labels = ['مستوى التعليم','مستوى السلوك','مستوى المواظبة'];
+  const texts = [
+    `${ratingText(vEdu)} %${vEdu}`,
+    `${ratingText(vBeh)} %${vBeh}`,
+    `${ratingText(vAtt)} %${vAtt}`
+  ];
+
+  const trace = {
+    x: labels,
+    y: values,
+    type:'bar',
+    text: texts,
+    textposition:'auto',
+    hoverinfo: 'none',          // يمنع أي تأثير عند مرور الفأرة
+    marker: { color:['#56CC8A','#FFBD80','#58A5ED'] },
+    textfont: {
+      family: 'HelveticaNeueW23, Arial, sans-serif',
+      size: 12,
+      color: 'black'
+    }
+  };
+
+  const layout = { 
+    margin:{l:40,r:20,b:40,t:40}, 
+    yaxis:{title:'النسبة %', range:[0,100]} 
+  };
+
+  Plotly.newPlot('studentChart',[trace],layout,{displayModeBar:false,responsive:true, staticPlot:true});
+
+}
+
+// تهيئة أولية
+updateChartAndInputs();
+
+// طباعة PDF
+function printPDF(){
+  const wrapper = document.createElement('div');
+  wrapper.style.width='210mm';
+  wrapper.style.height='296.5mm';
+  wrapper.style.padding='35mm 10mm 20mm 10mm';
+  wrapper.style.boxSizing='border-box';
+  wrapper.style.overflow='hidden';
+  wrapper.style.backgroundImage='url("images/background.png")';
+  wrapper.style.backgroundSize='cover';
+  wrapper.style.backgroundRepeat='no-repeat';
+  wrapper.style.backgroundPosition='center';
+
+  const content = document.querySelector('div[style*="max-width:800px"]').cloneNode(true);
+  content.querySelector('button').remove();
+
+  const selects = content.querySelectorAll('select');
+  selects.forEach(sel => sel.remove());
+
+  Plotly.toImage(document.getElementById('studentChart'), {format:'png', width:700, height:350}).then(function(dataUrl){
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    img.style.width='100%';
+    const chartDiv = content.querySelector('#studentChart');
+    if(chartDiv) chartDiv.replaceWith(img);
+
+    wrapper.appendChild(content);
+
+    html2pdf().set({
+      margin:0,
+      filename:'student_form.pdf',
+      image:{type:'jpeg', quality:0.95},
+      html2canvas:{scale:3, useCORS:true, backgroundColor:null, scrollY:0},
+      jsPDF:{unit:'mm', format:'a4', orientation:'portrait'}
+    }).from(wrapper).save();
+  });
+}
+</script>
+
+</body>
+</html>
